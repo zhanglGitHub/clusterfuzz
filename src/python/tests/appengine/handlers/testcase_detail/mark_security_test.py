@@ -52,6 +52,7 @@ class HandlerTest(unittest.TestCase):
         '/', {
             'testcaseId': self.testcase.key.id(),
             'csrf_token': form.generate_csrf_token(),
+            'security': True,
         })
 
     self.assertEqual(200, resp.status_int)
@@ -59,3 +60,21 @@ class HandlerTest(unittest.TestCase):
 
     testcase = self.testcase.key.get()
     self.assertTrue(testcase.security_flag)
+
+  def test_succeed_non_security(self):
+    """Mark a testcase as not security related."""
+    self.testcase.security_flag = True
+    self.testcase.put()
+
+    resp = self.app.post_json(
+        '/', {
+            'testcaseId': self.testcase.key.id(),
+            'csrf_token': form.generate_csrf_token(),
+            'security': False,
+        })
+
+    self.assertEqual(200, resp.status_int)
+    self.assertEqual('yes', resp.json['testcase'])
+
+    testcase = self.testcase.key.get()
+    self.assertFalse(testcase.security_flag)
